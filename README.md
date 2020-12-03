@@ -7,7 +7,7 @@ The script iterates through all internal links of a website and checks for spell
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install selenium, BeautifulSoup, requests, html2text.
 Download and install latest gecko webdriver for your platform - https://github.com/mozilla/geckodriver/releases.
 ```bash
-pip install selenium bs4 requests html2text
+pip install -r requirements.txt
 ```
 
 ## Usage
