@@ -2,43 +2,49 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import time
 
-def check_text(text):
-    url = "https://ispravi.me"
-    options = Options()
-    #options.headless = True
+class Hashek():
+    def __init__(self):
+        options = Options()
+        options.headless = True
 
-    driver = webdriver.Firefox(options=options)
-    driver.get(url)
+        self.driver = webdriver.Firefox(options=options)
 
-    textarea = driver.find_element_by_id("textarea")
-    textarea.send_keys(text)
+    def check_text(self, text):
+        url = "https://ispravi.me"
 
-    check_button = driver.find_element_by_id("checkText")
-    check_button.click()
+        self.driver.get(url)
 
-    time.sleep(5)
+        textarea = self.driver.find_element_by_id("textarea")
+        textarea.send_keys(text)
 
-    hascheck_errors = driver.find_elements_by_class_name("hascheck-error")
-    suggestions_dict = dict()
+        check_button = self.driver.find_element_by_id("checkText")
+        check_button.click()
 
-    for error in hascheck_errors:
-        driver.execute_script("arguments[0].scrollIntoView(true);", error)
-        time.sleep(0.5)
-        action = webdriver.ActionChains(driver)
-        action.move_to_element(error)
-        action.perform()
+        time.sleep(5)
 
-        time.sleep(1)
-        suggestions = list()
-        corrections = driver.find_elements_by_class_name("correction")
+        hascheck_errors = self.driver.find_elements_by_class_name("hascheck-error")
+        suggestions_dict = dict()
 
-        for correction in corrections:
-            suggestions.append(correction.text)
-        time.sleep(1)
+        for error in hascheck_errors:
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", error)
+            time.sleep(0.5)
+            action = webdriver.ActionChains(self.driver)
+            action.move_to_element(error)
+            action.perform()
 
-        suggestions_dict[error.text] = suggestions
-        print("Pogresna rijec: %s" % error.text)
-        print("Prijedlog ispravki: %s" % ', '.join(suggestions))
-    #print(suggestions_dict)
-    return suggestions_dict
-    driver.close()
+            time.sleep(1)
+            suggestions = list()
+            corrections = self.driver.find_elements_by_class_name("correction")
+
+            for correction in corrections:
+                suggestions.append(correction.text)
+            time.sleep(1)
+
+            suggestions_dict[error.text] = suggestions
+            print("Pogresna rijec: %s" % error.text)
+            print("Prijedlog ispravki: %s" % ', '.join(suggestions))
+        #print(suggestions_dict)
+        return suggestions_dict
+
+    def close(self):
+        self.driver.close()

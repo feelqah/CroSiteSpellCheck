@@ -1,62 +1,89 @@
 #!/usr/bin/python3
-#TODO: refactor this shit, make it more modular for later website integration
+
+import pyfiglet
 from bs4 import BeautifulSoup, SoupStrainer
 import requests
 import html2text
-import re
-from sys import argv
+import argparse
+import pysitemap
+from usp.tree import sitemap_tree_for_homepage
 
 import hashek
 
-#url = "https://superizazov22.com/" 
-#url = "https://net.hr/"
-url = argv[1]
-#Extract local links from website and fetch text from them
-def extract_local_links_from_url(url, links):
-    r = requests.get(url)
-    html_source = r.text
-
-    soup = BeautifulSoup(html_source, features="html.parser")
-
-    for link_tag in soup.find_all('a'):
-        link = link_tag.get('href')
-        if (link is not None and
-            link.startswith(url) and
-            link != url and 
-            link not in links):
-            links.append(link)
-            #print("link: %s" % link)
-    #print("number of local links: %s" % len(links))
-    #import pdb;pdb.set_trace()
-    return links
-
-links = []
-links = extract_local_links_from_url(url, links)
-#Recursive search of links for every link
-for link in links:
-    links = extract_local_links_from_url(link, links)
-
 
 def extract_text_from_link(link):
+    # TODO: handle newlines
+    #   some sentences end without new line
+    #   example:
+    #       Bla bla bla Car
+    #       Second sentence
+    #       looks like:
+    #       Bla bla bla CarSecond sentence
+    #
+    #       and hashek will then report CarSecond as error
     h = html2text.HTML2Text()
 
     h.ignore_links = True
     h.ignore_images = True
     h.ignore_emphasis = True
 
-
     r = requests.get(link)
     html_source = r.text
+
     html_text = h.handle(html_source)
 
     return html_text
-    #print(html_text)
-    #print("#######################################################################")
 
-print("Found %d links!" % len(links))
 
-for link in links:
-    text = extract_text_from_link(link)
-    print("Checking link: %s" % link)
-    hashek.check_text(text)
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Checks Croatian websites for spelling and grammar errors.")
 
+    parser.add_argument("--url",
+                        "-u",
+                        action="store",
+                        required=True,
+                        help="Starting URL of website")
+
+    args = parser.parse_args()
+
+    return args.url
+
+
+def print_banner():
+    banner = pyfiglet.figlet_format("CroSiteSpellChecker")
+    print(banner)
+
+
+def main():
+    print_banner()
+
+    root_url = get_args()
+
+    links = list()
+
+    tree = sitemap_tree_for_homepage(root_url)
+
+    for page in tree.all_pages():
+        links.append(page.url)
+
+    hc = hashek.Hashek()
+
+    print("\nGathered %d links from %s" % (len(links), root_url))
+
+    errors_fixes = list()
+
+    for i, link in enumerate(links):
+        text = extract_text_from_link(link)
+
+        print("Checking link: %s" % link)
+
+        suggestions_dict = hc.check_text(text)
+
+        errors_fixes.append({link: suggestions_dict})
+
+    hc.close()
+
+
+if __name__ == '__main__':
+    main()

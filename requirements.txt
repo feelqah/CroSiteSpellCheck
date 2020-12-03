@@ -1,0 +1,7 @@
+bs4==0.0.1
+html2text==2020.1.16
+pyfiglet==0.8.post1
+requests==2.24.0
+requests-html==0.10.0
+selenium==3.141.0
+ultimate-sitemap-parser==0.5
