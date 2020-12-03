@@ -1,5 +1,6 @@
 # CroSiteSpellCheck
-Python script to spell check croatian websites 
+Python script to spell check croatian websites.
+The script iterates through all internal links of a website and checks for spelling and grammar errors using [Hašek](https://ispravi.me/).
 
 ## Installation
 
